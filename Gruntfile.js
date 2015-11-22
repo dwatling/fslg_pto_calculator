@@ -16,7 +16,7 @@ module.exports = function (grunt) {
 			dist: {
 				files: {
 					"<%= global.outputFolder %>/css/app.min.css": ["<%= global.sourceFolder %>/stylesheets/app.scss"],
-					"<%= global.outputFolder %>/css/vendor.min.css": ["<%= global.sourceFolder %>/stylesheets/vendor.scss"]
+					"<%= global.outputFolder %>/css/vendor.min.css": ["node_modules/angular-material/angular-material.scss"]
 				}
 			}
 		},

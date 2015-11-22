@@ -1,19 +1,18 @@
 <span>
-	<md-whiteframe class="md-whiteframe-1dp" flex="25" layout layout-align="center center">
+	<md-whiteframe class="md-whiteframe-1dp md-padding" flex="25" layout-align="center center" layout="column">
 		<h1>PTO Calculator</h1>
 		<p>
 			I have been employed for
-			<select ng-model="input.years_employed">
-				<option value="0">&lt; 1 year</option>
-				<option value="4">1 - 5 years</option>
-				<option value="9">5 - 10 years</option>
-				<option value="14">10 - 15 years</option>
-				<option value="24">15 - 25 years</option>
-				<option value="25">25+ years</option>
-			</select>
+			<md-select ng-model="input.years_employed" ng-change="save()">
+				<md-option ng-repeat="item in ptoAccrualMatrix" ng-value="item.up_to_years_employed">{{item.label}}</md-option>
+			</md-select>
 		</p>
 		<p>
-			I have <input ng-model="input.last_pto"> hours of PTO as of <input ng-model="input.last_update">
+			<md-input-container>
+				<label>Current PTO (in hours)</label>
+				<input ng-model="input.last_pto" ng-change="save()">
+			</md-input-container>
+			<md-datepicker ng-model="input.last_update" md-placeholder="as of" ng-change="save()"></md-datepicker>
 		</p>
 		<hr/>
 		<p>
@@ -30,7 +29,8 @@
 		</p>
 		<hr/>
 		<p>
-			How much PTO will I have on <input ng-model="input.pto_as_of">?
+			How much PTO will I have on
+			<md-datepicker ng-model="input.pto_as_of" md-placeholder=""></md-datepicker>
 		</p>
 		<p>
 			You will have {{output.future_pto()|number:2}} hours of PTO at the end of that day.

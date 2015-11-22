@@ -8,19 +8,21 @@ angular.module('app.services')
 				{date: new Date(2018, 11, 22), cap: 40},		// TODO: verify
 			];
 
-		// TODO - These values currently include floating holidays, but I'm pretty sure those expire on a different date than the PTO cap
 		var MAX_PTO_DAYS = 29;
-		var PTO_ACCRUAL = [
-				{up_to_years_employed: 25, pto_days: 29},
-				{up_to_years_employed: 15, pto_days: 26},
-				{up_to_years_employed: 10, pto_days: 23},
-				{up_to_years_employed: 5, pto_days: 19},
-				{up_to_years_employed: 1, pto_days: 15}
+		this.getPtoAccrualMatrix = function() {
+			// TODO - These values currently include floating holidays, but I'm pretty sure those expire on a different date than the PTO cap
+			return [
+				{up_to_years_employed: 25, pto_days: 29, label: "15+ years"},
+				{up_to_years_employed: 15, pto_days: 26, label: "10 - 15 years"},
+				{up_to_years_employed: 10, pto_days: 23, label: "5 - 10 years"},
+				{up_to_years_employed: 5, pto_days: 19, label: "1 - 5 years"},
+				{up_to_years_employed: 1, pto_days: 15, label: "< 1 year"}
 			];
+		};
 
 		this.ptoPerYear = function(years_employed) {
 			var result = MAX_PTO_DAYS;
-			angular.forEach(PTO_ACCRUAL, function(accrual) {
+			angular.forEach(this.getPtoAccrualMatrix(), function(accrual) {
 				if (years_employed < accrual.up_to_years_employed) {
 					result = accrual.pto_days;
 				}
@@ -57,7 +59,7 @@ angular.module('app.services')
 			return result;
 		};
 
-		this.isDateWithinOneYearFromNow = function(date) {
+		this.isDateWithinOneYearFromNow = function(ptoCap) {
 			var diff = ptoCap.date - new Date();
 			var result = diff >= 0 && diff < MILLISECONDS_IN_A_YEAR;
 
@@ -67,11 +69,12 @@ angular.module('app.services')
 		// How many hours of PTO will I need to use by the cap dates?
 		this.calculateUseOrLose = function(years_employed, last_pto, last_update) {
 			var result = [];
+			var self = this;
 
 			// Loop through each of the cap dates and generate a list of how much PTO will need to be used by the cap date
 			angular.forEach(PTO_CAP_DATES, function(ptoCap) {
-				if (isDateWithinOneYearFromNow(ptoCap.date)) {
-					var pto = this.calculatePtoOnDate(ptoCap.date, years_employed, last_pto, last_update);
+				if (self.isDateWithinOneYearFromNow(ptoCap.date)) {
+					var pto = self.calculatePtoOnDate(ptoCap.date, years_employed, last_pto, last_update);
 					if (pto > ptoCap.cap) {
 						result.push(ptoCap.date, pto - ptoCap.cap);
 					}
