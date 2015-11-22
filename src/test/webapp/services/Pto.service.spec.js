@@ -107,6 +107,14 @@ describe("PtoService", function() {
 	});
 
 	describe("calculateCurrentPtoHours", function() {
+		it("should call into calculatePtoOnDate using now", function() {
+			spyOn(window, "Date").and.returnValue(MOCK_DATE);
+			spyOn(service, "calculatePtoOnDate");
+
+			service.calculateCurrentPtoHours(1, new Date())
+
+			expect(service.calculatePtoOnDate).toHaveBeenCalledWith()
+		});
 	});
 
 	describe("calculateCurrentPtoSeconds", function() {

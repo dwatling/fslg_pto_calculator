@@ -46,7 +46,6 @@ angular.module('app.components')
 	};
 
 	$scope.updateFuturePto = function() {
-	$log.info("date: ", $scope.ptoAsOf);
 		$scope.futurePto = PtoService.calculateFuturePto($scope.ptoAsOf, $scope.yearsEmployed, $scope.lastPto, $scope.lastPtoUpdate);
 	};
 

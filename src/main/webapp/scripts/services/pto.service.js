@@ -4,8 +4,8 @@ angular.module('app.services')
 
 		var PTO_CAP_DATES = [
 				{date: new Date(2015, 11, 26), cap: 80},
-				{date: new Date(2016, 2, 26), cap: 40},
-				{date: new Date(2016, 11, 24), cap: 40},
+				{date: new Date(2016, 2, 26), cap: 40},			// TODO: verify
+				{date: new Date(2016, 11, 24), cap: 40},		// TODO: verify
 				{date: new Date(2017, 11, 23), cap: 40},		// TODO: verify
 				{date: new Date(2018, 11, 22), cap: 40},		// TODO: verify
 			];
@@ -62,7 +62,7 @@ angular.module('app.services')
 		};
 
 		this.isDateWithinOneYearFromNow = function(ptoCap) {
-			var diff = ptoCap - new Date();
+			var diff = ptoCap - this.getNow();
 			var result = diff >= 0 && diff < MILLISECONDS_IN_A_YEAR;
 
 			return result;
@@ -87,11 +87,11 @@ angular.module('app.services')
 		};
 
 		this.calculateCurrentPtoHours = function(years_employed, last_pto, last_update) {
-			return this.calculatePtoOnDate(new Date(), years_employed, last_pto, last_update);
+			return this.calculatePtoOnDate(this.getNow(), years_employed, last_pto, last_update);
 		};
 
 		this.calculateCurrentPtoSeconds = function(years_employed, last_pto, last_update) {
-			return this.calculatePtoOnDate(new Date(), years_employed, last_pto, last_update) * 60 * 60;
+			return this.calculateCurrentPtoHours(years_employed, last_pto, last_update) * 60 * 60;
 		};
 
 		this.calculateFuturePto = function(on_date, years_employed, last_pto, last_update) {
@@ -100,5 +100,9 @@ angular.module('app.services')
 			temp.setMinutes(59);
 			temp.setSeconds(59);
 			return this.calculatePtoOnDate(temp, years_employed, last_pto, last_update);
+		};
+
+		this.getNow = function() {
+			return new Date();
 		};
 	});

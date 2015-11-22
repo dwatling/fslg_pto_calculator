@@ -4,7 +4,6 @@
 	<groupId>com.danwatling.</groupId>
 	<artifactId>fslg_pto_calculator</artifactId>
 	<version>TRUNK-SNAPSHOT</version>
-	<packaging>war</packaging>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
