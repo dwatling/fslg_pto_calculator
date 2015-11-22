@@ -1,17 +1,18 @@
 angular.module('app.components')
-	.controller('HomeController', ['$scope', '$routeParams', '$interval', 'DataStoreService', 'PtoService', '$log', function($scope, $routeParams, $interval, DataStoreService, PtoService, $log) {
+	.controller('HomeController', ['$scope', '$routeParams', 'DataStoreService', 'PtoService', '$log', function($scope, $routeParams, DataStoreService, PtoService, $log) {
 	$scope.yearsEmployed = undefined;
 	$scope.lastPto = undefined;
 	$scope.lastPtoUpdate = undefined;
 	$scope.futurePto = undefined;
+	$scope.ptoAsOf = new Date();
+
+	$scope.minDate = new Date();
 
 	$scope.output = {};
 
 	$scope.ptoAccrualMatrix = [];
 
 	$scope.showPtoCalculations = false;
-
-	var interval;
 
 	$scope.initialize = function() {
 		$scope.yearsEmployed = DataStoreService.get("years_employed");
@@ -23,21 +24,12 @@ angular.module('app.components')
 		$scope.update();
 	};
 
-	$scope.$on("$destroy", function() {
-		if (interval !== undefined) {
-			$interval.cancel(interval);
-			interval = undefined;
-		}
-	});
-
 	$scope.update = function() {
 		if ($scope.yearsEmployed !== undefined && $scope.lastPto !== undefined && $scope.lastPtoUpdate !== undefined) {
 			$scope.showPtoCalculations = true;
 		}
 
-		if ($scope.showPtoCalculations) {
-			interval = $interval($scope.recalculate, 250);
-		}
+		$scope.recalculate();
 	};
 
 	$scope.save = function() {
@@ -53,7 +45,8 @@ angular.module('app.components')
 		return PtoService.ptoPerPayPeriod($scope.yearsEmployed);
 	};
 
-	$scope.updateFuturePto = function(arg1, arg2) {
+	$scope.updateFuturePto = function() {
+	$log.info("date: ", $scope.ptoAsOf);
 		$scope.futurePto = PtoService.calculateFuturePto($scope.ptoAsOf, $scope.yearsEmployed, $scope.lastPto, $scope.lastPtoUpdate);
 	};
 

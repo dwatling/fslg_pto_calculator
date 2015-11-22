@@ -1,24 +1,20 @@
-<span layout="row">
-	<md-whiteframe class="md-whiteframe-1dp md-padding" flex="25" layout="column">
+<span layout="row" layout-sm="column">
+	<md-whiteframe class="md-whiteframe-1dp md-padding" flex="33" layout="column">
 		<h2>About Me</h2>
-		<span>
-			<label>Length of Employment</label>
+		<div layout layout-align="center center" layout-sm="column">
+			<label flex>Length of Employment</label>
 			<md-select ng-model="yearsEmployed" ng-change="save()" aria-label="Length of Employment">
 				<md-option ng-repeat="item in ptoAccrualMatrix" ng-value="item.up_to_years_employed">{{item.label}}</md-option>
 			</md-select>
-		</span>
-		<span>
-			As of
-			<md-datepicker ng-model="lastPtoUpdate" md-placeholder="date" ng-change="save()"></md-datepicker>
-		</span>
-		<span>
-			I have
-			<md-input-container>
+		</div>
+		<div layout layout-align="center center" layout-sm="column">
+			<md-input-container flex>
 				<label>Hours of PTO</label>
 				<input ng-model="lastPto" ng-change="save()">
 			</md-input-container>
-		</span>
-		<hr/>
+			<span>as of</span>
+			<md-datepicker ng-model="lastPtoUpdate" md-placeholder="Enter date" ng-change="save()"></md-datepicker>
+		</div>
 	</md-whiteframe>
 	<span class="md-padding"></span>
 	<md-whiteframe class="md-whiteframe-1dp md-padding" flex layout="column" ng-if="showPtoCalculations">
@@ -29,16 +25,13 @@
 		<p>
 			You have {{output.current_pto_hours|number:2}} hours of PTO as of right now.
 		</p>
-		<p>
-			You have {{output.current_pto_seconds|number:2}} seconds of PTO as of right now.
-		</p>
-		<span ng-repeat="item in output.use_or_lose" class="useOrLose">
+		<p ng-repeat="item in output.use_or_lose" class="useOrLose">
 			You will exceed the maximum PTO carry over on {{item.date|date}} by {{item.amount|number:2}} hours.
-		</span>
-		<hr/>
+		</p>
+		<md-divider></md-divider>
 		<p>
 			How much PTO will I have on
-			<md-datepicker ng-model="ptoAsOf" md-placeholder="Date" ng-change="updateFuturePto()"></md-datepicker>
+			<md-datepicker ng-model="ptoAsOf" md-placeholder="date" ng-change="updateFuturePto()" md-min-date="minDate"></md-datepicker>
 		</p>
 		<p ng-if="futurePto !== undefined">
 			You will have {{futurePto|number:2}} hours of PTO at the end of that day.
