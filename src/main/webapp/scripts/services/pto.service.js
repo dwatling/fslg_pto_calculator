@@ -10,22 +10,21 @@ angular.module('app.services')
 				{date: new Date(2018, 11, 22), cap: 40},		// TODO: verify
 			];
 
-		var MAX_PTO_DAYS = 29;
 		this.getPtoAccrualMatrix = function() {
 			// TODO - These values currently include floating holidays, but I'm pretty sure those expire on a different date than the PTO cap
 			return [
-				{up_to_years_employed: 25, pto_days: 29, label: "15+ years"},
-				{up_to_years_employed: 15, pto_days: 26, label: "10 - 15 years"},
-				{up_to_years_employed: 10, pto_days: 23, label: "5 - 10 years"},
-				{up_to_years_employed: 5, pto_days: 19, label: "1 - 5 years"},
-				{up_to_years_employed: 1, pto_days: 15, label: "< 1 year"}
+				{years_employed: 0, pto_days: 15, label: "< 1 year"},
+				{years_employed: 1, pto_days: 19, label: "1 - 5 years"},
+				{years_employed: 5, pto_days: 23, label: "5 - 10 years"},
+				{years_employed: 10, pto_days: 26, label: "10 - 15 years"},
+				{years_employed: 15, pto_days: 29, label: "15+ years"}
 			];
 		};
 
 		this.ptoPerYear = function(years_employed) {
-			var result = MAX_PTO_DAYS;
+			var result = 0;
 			angular.forEach(this.getPtoAccrualMatrix(), function(accrual) {
-				if (years_employed < accrual.up_to_years_employed) {
+				if (years_employed >= accrual.years_employed) {
 					result = accrual.pto_days;
 				}
 			});
@@ -53,6 +52,7 @@ angular.module('app.services')
 		};
 
 		// How many hours of PTO will I have on date X?
+		// TODO - Consider PTO_CAP_DATES
 		this.calculatePtoOnDate = function(on_date, years_employed, last_pto, last_update) {
 			var diff = (on_date - last_update) / 1000;
 			var accrued_pto = diff * this.ptoPerSecond(years_employed);
@@ -61,8 +61,8 @@ angular.module('app.services')
 			return result;
 		};
 
-		this.isDateWithinOneYearFromNow = function(ptoCap) {
-			var diff = ptoCap - this.getNow();
+		this.isDateWithinOneYearFromNow = function(date) {
+			var diff = date - this.getNow();
 			var result = diff >= 0 && diff < MILLISECONDS_IN_A_YEAR;
 
 			return result;
@@ -95,11 +95,10 @@ angular.module('app.services')
 		};
 
 		this.calculateFuturePto = function(on_date, years_employed, last_pto, last_update) {
-			var temp = new Date(on_date);
-			temp.setHours(23);
-			temp.setMinutes(59);
-			temp.setSeconds(59);
-			return this.calculatePtoOnDate(temp, years_employed, last_pto, last_update);
+			on_date.setHours(23);
+			on_date.setMinutes(59);
+			on_date.setSeconds(59);
+			return this.calculatePtoOnDate(on_date, years_employed, last_pto, last_update);
 		};
 
 		this.getNow = function() {

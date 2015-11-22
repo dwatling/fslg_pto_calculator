@@ -98,9 +98,28 @@ describe("PtoService", function() {
 	});
 
 	describe("calculatePtoOnDate", function() {
+		it("should calculate the number of hours of PTO will be available given certain criteria", function() {
+			spyOn(service, "ptoPerSecond").and.returnValue(0.000012);
+
+			var result = service.calculatePtoOnDate(new Date(2015, 11, 25), 15, 0, new Date(2015, 10, 26));
+
+			expect(result).toEqual(30.0672);
+		});
 	});
 
 	describe("isDateWithinOneYearFromNow", function() {
+		beforeEach(function() {
+			var MOCK_DATE = new Date(2015, 3, 1);
+			spyOn(service, "getNow").and.returnValue(MOCK_DATE);
+		});
+
+		var DATA = [{date: new Date(2014, 2, 29), expected: false}, {date: new Date(2015, 4, 1), expected: true}, {date: new Date(2016, 1, 1), expected: true}, {date: new Date(2016, 4, 1), expected: false}];
+
+		angular.forEach(DATA, function(input) {
+			it("should return " + input.expected + " for date " + input.date, function() {
+				expect(service.isDateWithinOneYearFromNow(input.date)).toEqual(input.expected);
+			});
+		});
 	});
 
 	describe("calculateUseOrLose", function() {
@@ -108,18 +127,46 @@ describe("PtoService", function() {
 
 	describe("calculateCurrentPtoHours", function() {
 		it("should call into calculatePtoOnDate using now", function() {
-			spyOn(window, "Date").and.returnValue(MOCK_DATE);
-			spyOn(service, "calculatePtoOnDate");
+			var MOCK_DATE = new Date(2015, 3, 1);
+			var LAST_UPDATE = new Date(2015, 2, 1);
 
-			service.calculateCurrentPtoHours(1, new Date())
+			spyOn(service, "getNow").and.returnValue(MOCK_DATE);
+			spyOn(service, "calculatePtoOnDate").and.returnValue(1);
 
-			expect(service.calculatePtoOnDate).toHaveBeenCalledWith()
+			var result = service.calculateCurrentPtoHours(1, 0, LAST_UPDATE);
+
+			expect(service.calculatePtoOnDate).toHaveBeenCalledWith(MOCK_DATE, 1, 0, LAST_UPDATE);
+			expect(result).toEqual(1);
 		});
 	});
 
 	describe("calculateCurrentPtoSeconds", function() {
+		it("should call into calculateCurrentPtoHours", function() {
+			var LAST_UPDATE = new Date(2015, 2, 1);
+
+			spyOn(service, "calculateCurrentPtoHours").and.returnValue(1);
+
+			var result = service.calculateCurrentPtoSeconds(1, 0, LAST_UPDATE);
+
+			expect(service.calculateCurrentPtoHours).toHaveBeenCalledWith(1, 0, LAST_UPDATE);
+			expect(result).toEqual(1 * 60 * 60);
+		});
 	});
 
 	describe("calculateFuturePto", function() {
+		it("should call into calculatePtoOnDate the end of the input date", function() {
+			var MOCK_DATE = new Date(2015, 11, 25);
+			spyOn(service, "calculatePtoOnDate").and.returnValue(1);
+			spyOn(MOCK_DATE, "setHours");
+			spyOn(MOCK_DATE, "setMinutes");
+			spyOn(MOCK_DATE, "setSeconds");
+
+			var result = service.calculateFuturePto(MOCK_DATE, 15, 0, new Date(2015, 10, 26));
+
+			expect(result).toEqual(1);
+			expect(MOCK_DATE.setHours).toHaveBeenCalledWith(23);
+			expect(MOCK_DATE.setMinutes).toHaveBeenCalledWith(59);
+			expect(MOCK_DATE.setSeconds).toHaveBeenCalledWith(59);
+		});
 	});
 });
