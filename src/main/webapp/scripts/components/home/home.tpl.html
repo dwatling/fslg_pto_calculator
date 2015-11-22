@@ -1,22 +1,30 @@
-<span>
-	<md-whiteframe class="md-whiteframe-1dp md-padding" flex="25" layout-align="center center" layout="column">
-		<h1>PTO Calculator</h1>
-		<p>
-			I have been employed for
-			<md-select ng-model="input.years_employed" ng-change="save()">
+<span layout="row">
+	<md-whiteframe class="md-whiteframe-1dp md-padding" flex="25" layout="column">
+		<h2>About Me</h2>
+		<span>
+			<label>Length of Employment</label>
+			<md-select ng-model="yearsEmployed" ng-change="save()" aria-label="Length of Employment">
 				<md-option ng-repeat="item in ptoAccrualMatrix" ng-value="item.up_to_years_employed">{{item.label}}</md-option>
 			</md-select>
-		</p>
-		<p>
+		</span>
+		<span>
+			As of
+			<md-datepicker ng-model="lastPtoUpdate" md-placeholder="date" ng-change="save()"></md-datepicker>
+		</span>
+		<span>
+			I have
 			<md-input-container>
-				<label>Current PTO (in hours)</label>
-				<input ng-model="input.last_pto" ng-change="save()">
+				<label>Hours of PTO</label>
+				<input ng-model="lastPto" ng-change="save()">
 			</md-input-container>
-			<md-datepicker ng-model="input.last_update" md-placeholder="as of" ng-change="save()"></md-datepicker>
-		</p>
+		</span>
 		<hr/>
+	</md-whiteframe>
+	<span class="md-padding"></span>
+	<md-whiteframe class="md-whiteframe-1dp md-padding" flex layout="column" ng-if="showPtoCalculations">
+		<h2>My PTO</h2>
 		<p>
-			Your accrual rate is {{output.accrual_rate()|number:2}} hours every pay period.
+			Your accrual rate is {{accrual_rate()|number:2}} hours every pay period.
 		</p>
 		<p>
 			You have {{output.current_pto_hours|number:2}} hours of PTO as of right now.
@@ -24,16 +32,16 @@
 		<p>
 			You have {{output.current_pto_seconds|number:2}} seconds of PTO as of right now.
 		</p>
-		<p>
-			You will exceed the maximum PTO carry over by {{output.use_or_lose|number:2}} hours at the end of the year.
-		</p>
+		<span ng-repeat="item in output.use_or_lose" class="useOrLose">
+			You will exceed the maximum PTO carry over on {{item.date|date}} by {{item.amount|number:2}} hours.
+		</span>
 		<hr/>
 		<p>
 			How much PTO will I have on
-			<md-datepicker ng-model="input.pto_as_of" md-placeholder=""></md-datepicker>
+			<md-datepicker ng-model="ptoAsOf" md-placeholder="Date" ng-change="updateFuturePto()"></md-datepicker>
 		</p>
-		<p>
-			You will have {{output.future_pto()|number:2}} hours of PTO at the end of that day.
+		<p ng-if="futurePto !== undefined">
+			You will have {{futurePto|number:2}} hours of PTO at the end of that day.
 		</p>
 	</md-whiteframe>
 </span>

@@ -1,5 +1,7 @@
 angular.module('app.services')
 	.service('PtoService', function() {
+		var MILLISECONDS_IN_A_YEAR = 1000 * 60 * 60 * 24 * 365;
+
 		var PTO_CAP_DATES = [
 				{date: new Date(2015, 11, 26), cap: 80},
 				{date: new Date(2016, 2, 26), cap: 40},
@@ -60,7 +62,7 @@ angular.module('app.services')
 		};
 
 		this.isDateWithinOneYearFromNow = function(ptoCap) {
-			var diff = ptoCap.date - new Date();
+			var diff = ptoCap - new Date();
 			var result = diff >= 0 && diff < MILLISECONDS_IN_A_YEAR;
 
 			return result;
@@ -76,7 +78,7 @@ angular.module('app.services')
 				if (self.isDateWithinOneYearFromNow(ptoCap.date)) {
 					var pto = self.calculatePtoOnDate(ptoCap.date, years_employed, last_pto, last_update);
 					if (pto > ptoCap.cap) {
-						result.push(ptoCap.date, pto - ptoCap.cap);
+						result.push({date: ptoCap.date, amount: pto - ptoCap.cap});
 					}
 				}
 			});
