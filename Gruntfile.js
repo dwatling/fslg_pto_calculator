@@ -31,7 +31,7 @@ module.exports = function (grunt) {
 			},
 			app: {
 				files: ["<%= global.sourceFolder %>/scripts/**/*.js"],
-				tasks: ['jshint', 'concat', 'copy:deploy'],
+				tasks: ['jshint', 'concat:app', 'copy:deploy'],
 				options: {
 					spawn: false,
 					interrupt: true
@@ -39,7 +39,7 @@ module.exports = function (grunt) {
 			},
 			templates: {
 				files: ["<%= global.sourceFolder %>/**/*.tpl.html"],
-				tasks: ['ngtemplates', 'concat', 'copy:deploy'],
+				tasks: ['ngtemplates', 'concat:app', 'copy:deploy'],
 				options: {
 					spawn: false,
 					interrupt: true
@@ -106,6 +106,22 @@ module.exports = function (grunt) {
 					"<%= global.outputFolder %>/js/app.min.js": [
 						"<%= global.tempBuildFolder %>/app.templates.js",
 						"<%= global.sourceFolder %>/scripts/**/*.js"
+					]
+				}
+			},
+			vendor: {
+				options: {
+					sourceMap: true
+				},
+				files: {
+					"<%= global.outputFolder %>/js/vendor.min.js": [
+						"node_modules/jquery/dist/jquery.js",
+						"node_modules/lodash/index.js",
+						"node_modules/angular/angular.js",
+						"node_modules/angular-animate/angular-animate.js",
+						"node_modules/angular-aria/angular-aria.js",
+						"node_modules/angular-material/angular-material.js",
+						"node_modules/angular-route/angular-route.js",
 					]
 				}
 			}
