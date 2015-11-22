@@ -1,9 +1,12 @@
 angular.module('app.services')
-	.service('DataStoreService', ['$window', function($window) {
+	.service('DataStoreService', ['$window', '$log', function($window, $log) {
 		this.set = function(key, value) {
-			if (angular.isObject(value)) {
+			if (angular.isDate(value)) {
+				value = value.toJSON();
+			} else if (angular.isObject(value)) {
 				value = angular.toJson(value);
 			}
+			$log.debug("Setting '" + key + "' to: ", value);
 			$window.localStorage.setItem(key, value);
 		};
 
@@ -22,10 +25,16 @@ angular.module('app.services')
 					var temp = Number(result);
 					if (temp.toString() !== 'NaN') {
 						result = temp;
+					} else {
+						temp = new Date(result);
+						if (temp.toString() !== 'Invalid Date') {
+							result = temp;
+						}
 					}
 				}
 			}
 
+			$log.debug("'" + key + "' is: ", result);
 			return result;
 		};
 	}]);

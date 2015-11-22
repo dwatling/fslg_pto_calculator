@@ -32,6 +32,13 @@ describe("DataStoreService", function() {
 
 			expect($window.localStorage.getItem("key")).toEqual("1");
 		});
+
+		it("should store Dates in localStorage", function() {
+			var DATA = new Date(2001, 3, 1);
+			service.set("key", DATA);
+
+			expect($window.localStorage.getItem("key")).toEqual(DATA.toJSON());
+		});
 	});
 
 	describe("get", function() {
@@ -73,6 +80,15 @@ describe("DataStoreService", function() {
 			var result = service.get("key");
 
 			expect(result).toEqual(DATA);
+		});
+
+		it("should return Date if key is defined in localStorage", function() {
+			var DATE = new Date("2003/04/01 12:00:00")
+			var DATA = DATE.toJSON();
+			$window.localStorage.setItem("key", DATA);
+			var result = service.get("key");
+
+			expect(result).toEqual(DATE);
 		});
 	});
 });
