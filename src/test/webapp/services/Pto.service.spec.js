@@ -13,6 +13,19 @@ describe("PtoService", function() {
 		});
 	});
 
+	describe("getPtoAccrualMatrix", function() {
+		it("should return an array with three fields", function() {
+			var result = service.getPtoAccrualMatrix();
+
+			expect(Object.prototype.toString.call(result)).toEqual("[object Array]");
+			angular.forEach(result, function(item) {
+				expect(item.yearsEmployed).not.toEqual(undefined);
+				expect(item.ptoPerYear).not.toEqual(undefined);
+				expect(item.label).not.toEqual(undefined);
+			});
+		});
+	});
+
 	describe("ptoPerPayPeriod", function() {
 		it("should return PTO (in hours) accrued every pay period (2 weeks)", function() {
 			var EXPECTED = mockEmployee.ptoPerYear * 8 / 26;

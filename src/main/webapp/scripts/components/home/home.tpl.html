@@ -20,18 +20,18 @@
 	<md-whiteframe class="md-whiteframe-1dp md-padding" flex layout="column" ng-show="showPtoCalculations">
 		<h2>My PTO</h2>
 		<p>
-			Your accrual rate is {{accrual_rate()|number:2}} hours every pay period.
+			Your accrual rate is {{accrualRrate|number:2}} hours every pay period.
 		</p>
 		<p>
-			You have {{output.current_pto_hours|number:2}} hours of PTO as of right now.
+			You have {{currentPtoHours|number:2}} hours of PTO as of right now.
 		</p>
-		<p ng-repeat="item in output.use_or_lose" class="useOrLose">
+		<p ng-repeat="item in useOrLose" class="useOrLose">
 			You will exceed the maximum PTO carry over on {{item.date|date}} by {{item.amount|number:2}} hours.
 		</p>
 		<md-divider></md-divider>
 		<p>
 			How much PTO will I have on
-			<md-datepicker ng-model="ptoAsOf" md-placeholder="date" ng-change="updateFuturePto()" md-min-date="minDate"></md-datepicker>
+			<md-datepicker ng-model="ptoAsOf" md-placeholder="date" ng-change="refreshFuturePto()" md-min-date="minDate"></md-datepicker>
 		</p>
 		<p ng-if="futurePto !== undefined">
 			You will have {{futurePto|number:2}} hours of PTO at the start of that day.
