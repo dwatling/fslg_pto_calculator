@@ -3,17 +3,17 @@
 		<h2>About Me</h2>
 		<div layout layout-align="center center" layout-sm="column">
 			<label flex>Length of Employment</label>
-			<md-select ng-model="yearsEmployed" ng-change="save()" aria-label="Length of Employment">
-				<md-option ng-repeat="item in ptoAccrualMatrix" ng-value="item.years_employed">{{item.label}}</md-option>
+			<md-select ng-model="employee.yearsEmployed" ng-change="save()" aria-label="Length of Employment">
+				<md-option ng-repeat="item in ptoAccrualMatrix" ng-value="item.yearsEmployed">{{item.label}}</md-option>
 			</md-select>
 		</div>
 		<div layout layout-align="center center" layout-sm="column">
 			<md-input-container flex>
 				<label>Hours of PTO</label>
-				<input ng-model="lastPto" ng-change="save()">
+				<input ng-model="employee.lastPto" ng-change="save()">
 			</md-input-container>
 			<span>as of</span>
-			<md-datepicker ng-model="lastPtoUpdate" md-placeholder="Enter date" ng-change="save()"></md-datepicker>
+			<md-datepicker ng-model="employee.lastPtoUpdate" md-placeholder="Enter date" ng-change="save()"></md-datepicker>
 		</div>
 	</md-whiteframe>
 	<span class="md-padding"></span>
@@ -34,7 +34,7 @@
 			<md-datepicker ng-model="ptoAsOf" md-placeholder="date" ng-change="updateFuturePto()" md-min-date="minDate"></md-datepicker>
 		</p>
 		<p ng-if="futurePto !== undefined">
-			You will have {{futurePto|number:2}} hours of PTO at the end of that day.
+			You will have {{futurePto|number:2}} hours of PTO at the start of that day.
 		</p>
 	</md-whiteframe>
 </span>

@@ -1,172 +1,94 @@
 describe("PtoService", function() {
 	var service;
 
+	var mockEmployee;
+
 	beforeEach(function() {
 		module("app.services");
+
+		mockEmployee = new Employee({yearsEmployed: 10, ptoPerYear: 26, lastPto: 10, lastPtoUpdate: new Date("2015/10/31")});
 
 		inject(function($injector) {
 			service = $injector.get("PtoService");
 		});
 	});
 
-	describe("ptoPerYear", function() {
+	describe("ptoPerPayPeriod", function() {
+		it("should return PTO (in hours) accrued every pay period (2 weeks)", function() {
+			var EXPECTED = mockEmployee.ptoPerYear * 8 / 26;
+
+			var result = service.ptoPerPayPeriod(mockEmployee);
+			expect(result).toEqual(EXPECTED);
+		});
+	});
+
+	describe("calculateNumberOfPayPeriods", function() {
 		var DATA = [
-				{years_employed: 0, expected: 15},
-				{years_employed: 1, expected: 19},
-				{years_employed: 5, expected: 23},
-				{years_employed: 10, expected: 26},
-				{years_employed: 15, expected: 29},
-				{years_employed: 25, expected: 29},
-				{years_employed: 26, expected: 29}
-			];
+			{fromDate: new Date(2015, 11, 12), toDate: new Date(2015, 11, 26), expected: 1},
+			{fromDate: new Date(2015, 11, 12), toDate: new Date(2016, 0, 9), expected: 2},
+			{fromDate: new Date(2015, 11, 12), toDate: new Date(2016, 0, 16), expected: 2.5},
+		];
+
 		angular.forEach(DATA, function(input) {
-			it("should return " + input.expected + " for " + input.years_employed + " years of service.", function() {
-				var result = service.ptoPerYear(input.years_employed);
+			it("should return " + input.expected + " pay periods between two dates (" + input.fromDate + ", " + input.toDate + ")", function() {
+				var result = service.calculateNumberOfPayPeriods(input.fromDate, input.toDate);
 				expect(result).toEqual(input.expected);
 			});
 		});
 	});
 
-	describe("ptoPerPayPeriod", function() {
-		it("should return PTO (in hours) accrued every pay period (two weeks)", function() {
-			var DATA = 10;
-			var EXPECTED = DATA * 8 / 26;		// 8 hours in a work day, 26 pay periods per year
-
-			spyOn(service, "ptoPerYear").and.returnValue(DATA);
-
-			var result = service.ptoPerPayPeriod(10);
-			expect(result).toEqual(EXPECTED);
-
-			expect(service.ptoPerYear).toHaveBeenCalled();
-		});
-	});
-
-	describe("ptoPerDay", function() {
-		it("should return PTO (in hours) accrued every day", function() {
-			var DATA = 10;
-			var EXPECTED = DATA / 14;
-
-			spyOn(service, "ptoPerPayPeriod").and.returnValue(DATA);
-
-			var result = service.ptoPerDay(10);
-			expect(result).toEqual(EXPECTED);
-
-			expect(service.ptoPerPayPeriod).toHaveBeenCalled();
-		});
-	});
-
-	describe("ptoPerHour", function() {
-		it("should return PTO (in hours) accrued every hour", function() {
-			var DATA = 10;
-			var EXPECTED = DATA / 24;		// 14 days in a pay period
-
-			spyOn(service, "ptoPerDay").and.returnValue(DATA);
-
-			var result = service.ptoPerHour(10);
-			expect(result).toEqual(EXPECTED);
-
-			expect(service.ptoPerDay).toHaveBeenCalled();
-		});
-	});
-
-	describe("ptoPerMinute", function() {
-		it("should return PTO (in hours) accrued every hour", function() {
-			var DATA = 10;
-			var EXPECTED = DATA / 60;		// 14 days in a pay period
-
-			spyOn(service, "ptoPerHour").and.returnValue(DATA);
-
-			var result = service.ptoPerMinute(10);
-			expect(result).toEqual(EXPECTED);
-
-			expect(service.ptoPerHour).toHaveBeenCalled();
-		});
-	});
-
-	describe("ptoPerSecond", function() {
-		it("should return PTO (in hours) accrued every hour", function() {
-			var DATA = 10;
-			var EXPECTED = DATA / 60;		// 14 days in a pay period
-
-			spyOn(service, "ptoPerMinute").and.returnValue(DATA);
-
-			var result = service.ptoPerSecond(10);
-			expect(result).toEqual(EXPECTED);
-
-			expect(service.ptoPerMinute).toHaveBeenCalled();
-		});
-	});
-
 	describe("calculatePtoOnDate", function() {
 		it("should calculate the number of hours of PTO will be available given certain criteria", function() {
-			spyOn(service, "ptoPerSecond").and.returnValue(0.000012);
+			var result = service.calculatePtoOnDate(mockEmployee, new Date(2015, 11, 25, 12, 0, 0));
 
-			var result = service.calculatePtoOnDate(new Date(2015, 11, 25), 15, 0, new Date(2015, 10, 26));
+			expect(result).toEqual(41.73809523809524);
+		});
 
-			expect(result).toEqual(30.0672);
+		it("should calculate the number of hours of PTO will be available at the start of the day given certain criteria", function() {
+			var result = service.calculatePtoOnDate(mockEmployee, new Date(2015, 11, 25, 12, 0, 0), true);
+
+			expect(result).toEqual(41.45238095238095);
+		});
+
+		it("should consider PTO cap dates", function() {
+			var tonsOfPtoBoy = new Employee({yearsEmployed: 10, ptoPerYear: 26, lastPto: 200, lastPtoUpdate: new Date(2015, 11, 12)});
+			var result = service.calculatePtoOnDate(tonsOfPtoBoy, new Date(2015, 11, 26, 0, 0, 0));
+
+			expect(result).toEqual(80);
+
+			result = service.calculatePtoOnDate(tonsOfPtoBoy, new Date(2016, 2, 26, 0, 0, 0));
+
+			expect(result).toEqual(40);
 		});
 	});
 
-	describe("isDateWithinOneYearFromNow", function() {
-		beforeEach(function() {
-			var MOCK_DATE = new Date(2015, 3, 1);
-			spyOn(service, "getNow").and.returnValue(MOCK_DATE);
-		});
-
-		var DATA = [{date: new Date(2014, 2, 29), expected: false}, {date: new Date(2015, 4, 1), expected: true}, {date: new Date(2016, 1, 1), expected: true}, {date: new Date(2016, 4, 1), expected: false}];
+	describe("isDateWithinOneYearFromLastPtoUpdate", function() {
+		var DATA = [{date: new Date(2014, 2, 29), expected: false}, {date: new Date(2015, 4, 1), expected: false}, {date: new Date(2016, 1, 1), expected: true}, {date: new Date(2016, 4, 1), expected: true}];
 
 		angular.forEach(DATA, function(input) {
 			it("should return " + input.expected + " for date " + input.date, function() {
-				expect(service.isDateWithinOneYearFromNow(input.date)).toEqual(input.expected);
+				expect(service.isDateWithinOneYearFromLastPtoUpdate(mockEmployee, input.date)).toEqual(input.expected);
 			});
 		});
 	});
 
 	describe("calculateUseOrLose", function() {
-	});
-
-	describe("calculateCurrentPtoHours", function() {
-		it("should call into calculatePtoOnDate using now", function() {
-			var MOCK_DATE = new Date(2015, 3, 1);
-			var LAST_UPDATE = new Date(2015, 2, 1);
-
-			spyOn(service, "getNow").and.returnValue(MOCK_DATE);
-			spyOn(service, "calculatePtoOnDate").and.returnValue(1);
-
-			var result = service.calculateCurrentPtoHours(1, 0, LAST_UPDATE);
-
-			expect(service.calculatePtoOnDate).toHaveBeenCalledWith(MOCK_DATE, 1, 0, LAST_UPDATE);
-			expect(result).toEqual(1);
+		it("should return nothing if employee won't be affected by PTO caps", function() {
+			var noPtoBoy = new Employee({yearsEmployed: 10, ptoPerYear: 1, lastPto: 0, lastPtoUpdate: new Date(2015, 11, 12)});
+			var result = service.calculateUseOrLose(noPtoBoy);
+			expect(result).toEqual([]);
 		});
-	});
 
-	describe("calculateCurrentPtoSeconds", function() {
-		it("should call into calculateCurrentPtoHours", function() {
-			var LAST_UPDATE = new Date(2015, 2, 1);
-
-			spyOn(service, "calculateCurrentPtoHours").and.returnValue(1);
-
-			var result = service.calculateCurrentPtoSeconds(1, 0, LAST_UPDATE);
-
-			expect(service.calculateCurrentPtoHours).toHaveBeenCalledWith(1, 0, LAST_UPDATE);
-			expect(result).toEqual(1 * 60 * 60);
+		it("should return March cut off date if employee won't be affected by December PTO cap", function() {
+			var somePtoBoy = new Employee({yearsEmployed: 10, ptoPerYear: 20, lastPto: 15, lastPtoUpdate: new Date(2015, 11, 12)});
+			var result = service.calculateUseOrLose(somePtoBoy);
+			expect(result).toEqual([{date: new Date(2016, 2, 26), amount: 21.13552604802605}]);
 		});
-	});
 
-	describe("calculateFuturePto", function() {
-		it("should call into calculatePtoOnDate the end of the input date", function() {
-			var MOCK_DATE = new Date(2015, 11, 25);
-			spyOn(service, "calculatePtoOnDate").and.returnValue(1);
-			spyOn(MOCK_DATE, "setHours");
-			spyOn(MOCK_DATE, "setMinutes");
-			spyOn(MOCK_DATE, "setSeconds");
-
-			var result = service.calculateFuturePto(MOCK_DATE, 15, 0, new Date(2015, 10, 26));
-
-			expect(result).toEqual(1);
-			expect(MOCK_DATE.setHours).toHaveBeenCalledWith(23);
-			expect(MOCK_DATE.setMinutes).toHaveBeenCalledWith(59);
-			expect(MOCK_DATE.setSeconds).toHaveBeenCalledWith(59);
+		it("should return both December and March cut off dates if employee will be affected PTO caps", function() {
+			var tonsOfPtoBoy = new Employee({yearsEmployed: 10, ptoPerYear: 20, lastPto: 200, lastPtoUpdate: new Date(2015, 11, 12)});
+			var result = service.calculateUseOrLose(tonsOfPtoBoy);
+			expect(result).toEqual([{date: new Date(2015, 11, 26), amount: 126.15384106634107}, {date: new Date(2016, 2, 26), amount: 79.9816798941799}]);
 		});
 	});
 });

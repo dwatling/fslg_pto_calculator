@@ -1,6 +1,7 @@
 angular.module('app.services')
 	.service('PtoService', function() {
 		var MILLISECONDS_IN_A_YEAR = 1000 * 60 * 60 * 24 * 365;
+		var MILLISECONDS_IN_A_PAYPERIOD = 1000 * 60 * 60 * 24 * 14;
 
 		var PTO_CAP_DATES = [
 				{date: new Date(2015, 11, 26), cap: 80},
@@ -13,95 +14,77 @@ angular.module('app.services')
 		this.getPtoAccrualMatrix = function() {
 			// TODO - These values currently include floating holidays, but I'm pretty sure those expire on a different date than the PTO cap
 			return [
-				{years_employed: 0, pto_days: 15, label: "< 1 year"},
-				{years_employed: 1, pto_days: 19, label: "1 - 5 years"},
-				{years_employed: 5, pto_days: 23, label: "5 - 10 years"},
-				{years_employed: 10, pto_days: 26, label: "10 - 15 years"},
-				{years_employed: 15, pto_days: 29, label: "15+ years"}
+				{yearsEmployed: 0, ptoPerYear: 15, label: "< 1 year"},
+				{yearsEmployed: 1, ptoPerYear: 19, label: "1 - 5 years"},
+				{yearsEmployed: 5, ptoPerYear: 23, label: "5 - 10 years"},
+				{yearsEmployed: 10, ptoPerYear: 26, label: "10 - 15 years"},
+				{yearsEmployed: 15, ptoPerYear: 29, label: "15+ years"}
 			];
 		};
 
-		this.ptoPerYear = function(years_employed) {
-			var result = 0;
-			angular.forEach(this.getPtoAccrualMatrix(), function(accrual) {
-				if (years_employed >= accrual.years_employed) {
-					result = accrual.pto_days;
-				}
-			});
+		this.ptoPerPayPeriod = function(employee) {
+			return employee.ptoPerYear * 8 / 26;
+		};
+
+		// Assumes fromDate is the end of a pay period (i.e. when PTO is actually accrued)
+		this.calculateNumberOfPayPeriods = function(fromDate, toDate) {
+			var result = (toDate - fromDate) / MILLISECONDS_IN_A_PAYPERIOD;
+
 			return result;
-		};
-
-		this.ptoPerPayPeriod = function(years_employed) {
-			return this.ptoPerYear(years_employed) * 8 / 26;
-		};
-
-		this.ptoPerDay = function(years_employed) {
-			return this.ptoPerPayPeriod(years_employed) / 14;	// TODO: There are actually only 10 working days in a pay period
-		};
-
-		this.ptoPerHour = function(years_employed) {
-			return this.ptoPerDay(years_employed) / 24;
-		};
-
-		this.ptoPerMinute = function(years_employed) {
-			return this.ptoPerHour(years_employed) / 60;
-		};
-
-		this.ptoPerSecond = function(years_employed) {
-			return this.ptoPerMinute(years_employed) / 60;
 		};
 
 		// How many hours of PTO will I have on date X?
-		// TODO - Consider PTO_CAP_DATES
-		this.calculatePtoOnDate = function(on_date, years_employed, last_pto, last_update) {
-			var diff = (on_date - last_update) / 1000;
-			var accrued_pto = diff * this.ptoPerSecond(years_employed);
-			var result = last_pto + accrued_pto;
+		this.calculatePtoOnDate = function(employee, date, shouldBeStartOfDay, skipCaps) {
+			if (shouldBeStartOfDay) {
+				date.setHours(0);
+				date.setMinutes(0);
+				date.setSeconds(0);
+			}
+
+			var numberOfPayPeriods = this.calculateNumberOfPayPeriods(employee.lastPtoUpdate, date);
+			var ptoEarned = numberOfPayPeriods * this.ptoPerPayPeriod(employee);
+
+			var result = employee.lastPto + ptoEarned;
+
+			if (!skipCaps) {
+				angular.forEach(PTO_CAP_DATES, function(ptoCap) {
+					if (employee.lastPtoUpdate < ptoCap.date && date >= ptoCap.date) {
+						if (result > ptoCap.cap) {
+							var tempEmployee = new Employee(employee);
+							tempEmployee.lastPtoUpdate = ptoCap.date;
+							tempEmployee.lastPto = ptoCap.cap;
+							result = this.calculatePtoOnDate(tempEmployee, date, shouldBeStartOfDay, true);
+						}
+					}
+				}, this);
+			}
 
 			return result;
 		};
 
-		this.isDateWithinOneYearFromNow = function(date) {
-			var diff = date - this.getNow();
+		this.isDateWithinOneYearFromLastPtoUpdate = function(employee, date) {
+			var diff = date - employee.lastPtoUpdate;
 			var result = diff >= 0 && diff < MILLISECONDS_IN_A_YEAR;
 
 			return result;
 		};
 
 		// How many hours of PTO will I need to use by the cap dates?
-		this.calculateUseOrLose = function(years_employed, last_pto, last_update) {
+		this.calculateUseOrLose = function(employee) {
 			var result = [];
-			var self = this;
 
 			// Loop through each of the cap dates and generate a list of how much PTO will need to be used by the cap date
 			angular.forEach(PTO_CAP_DATES, function(ptoCap) {
-				if (self.isDateWithinOneYearFromNow(ptoCap.date)) {
-					var pto = self.calculatePtoOnDate(ptoCap.date, years_employed, last_pto, last_update);
+				if (this.isDateWithinOneYearFromLastPtoUpdate(employee, ptoCap.date)) {
+					var oneSecondBeforeCap = new Date(ptoCap.date);
+					oneSecondBeforeCap.setSeconds(-1);
+					var pto = this.calculatePtoOnDate(employee, oneSecondBeforeCap);
 					if (pto > ptoCap.cap) {
 						result.push({date: ptoCap.date, amount: pto - ptoCap.cap});
 					}
 				}
-			});
+			}, this);
 
 			return result;
-		};
-
-		this.calculateCurrentPtoHours = function(years_employed, last_pto, last_update) {
-			return this.calculatePtoOnDate(this.getNow(), years_employed, last_pto, last_update);
-		};
-
-		this.calculateCurrentPtoSeconds = function(years_employed, last_pto, last_update) {
-			return this.calculateCurrentPtoHours(years_employed, last_pto, last_update) * 60 * 60;
-		};
-
-		this.calculateFuturePto = function(on_date, years_employed, last_pto, last_update) {
-			on_date.setHours(23);
-			on_date.setMinutes(59);
-			on_date.setSeconds(59);
-			return this.calculatePtoOnDate(on_date, years_employed, last_pto, last_update);
-		};
-
-		this.getNow = function() {
-			return new Date();
 		};
 	});
