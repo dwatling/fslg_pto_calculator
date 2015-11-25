@@ -50,6 +50,26 @@ describe("HomeController", function() {
 		});
 	});
 
+	describe("determinePtoPerYear", function() {
+		it("should set $scope.employee.ptoPerYear based on $scope.ptoAccrualMatrix based on $scope.employee.yearsEmployed && ptoAccrualMatrix->yearsEmployed", function() {
+			$scope.employee = {yearsEmployed: 2};
+			$scope.ptoAccrualMatrix = [{yearsEmployed: 1, ptoPerYear: 1}, {yearsEmployed: 2, ptoPerYear: 2}, {yearsEmployed: 3, ptoPerYear: 3}];
+
+			$scope.determinePtoPerYear();
+
+			expect($scope.employee.ptoPerYear).toEqual(2);
+		});
+
+		it("should not set anything if no matching yearsEmployed", function() {
+			$scope.employee = {yearsEmployed: 23};
+			$scope.ptoAccrualMatrix = [{yearsEmployed: 1, ptoPerYear: 1}, {yearsEmployed: 2, ptoPerYear: 2}, {yearsEmployed: 3, ptoPerYear: 3}];
+
+			$scope.determinePtoPerYear();
+
+			expect($scope.employee.ptoPerYear).toEqual(undefined);
+		});
+	});
+
 	describe("getNow", function() {
 		it("should return a Date", function() {
 			var result = $scope.getNow();
