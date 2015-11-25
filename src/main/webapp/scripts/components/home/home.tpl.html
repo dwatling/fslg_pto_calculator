@@ -10,7 +10,8 @@
 		<div layout layout-align="center center" layout-sm="column">
 			<md-input-container flex>
 				<label>Hours of PTO</label>
-				<input ng-model="employee.lastPto" ng-change="save()">
+
+				<input ng-model="employee.lastPto" type="number" step="0.01" ng-change="save()">
 			</md-input-container>
 			<span>as of</span>
 			<md-datepicker ng-model="employee.lastPtoUpdate" md-placeholder="Enter date" ng-change="save()"></md-datepicker>
