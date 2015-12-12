@@ -69,7 +69,7 @@ describe("PtoService", function() {
 
 			expect(result).toEqual(80);
 
-			result = service.calculatePtoOnDate(tonsOfPtoBoy, new Date(2016, 2, 26, 0, 0, 0));
+			result = service.calculatePtoOnDate(tonsOfPtoBoy, new Date(2016, 2, 19, 0, 0, 0));
 
 			expect(result).toEqual(40);
 		});
@@ -95,13 +95,13 @@ describe("PtoService", function() {
 		it("should return March cut off date if employee won't be affected by December PTO cap", function() {
 			var somePtoBoy = new Employee({yearsEmployed: 10, ptoPerYear: 20, lastPto: 15, lastPtoUpdate: new Date(2015, 11, 12)});
 			var result = service.calculateUseOrLose(somePtoBoy);
-			expect(result).toEqual([{date: new Date(2016, 2, 26), amount: 21.13552604802605}]);
+			expect(result).toEqual([{date: new Date(2016, 2, 19), amount: 18.05860297110297}]);
 		});
 
 		it("should return both December and March cut off dates if employee will be affected PTO caps", function() {
 			var tonsOfPtoBoy = new Employee({yearsEmployed: 10, ptoPerYear: 20, lastPto: 200, lastPtoUpdate: new Date(2015, 11, 12)});
 			var result = service.calculateUseOrLose(tonsOfPtoBoy);
-			expect(result).toEqual([{date: new Date(2015, 11, 26), amount: 126.15384106634107}, {date: new Date(2016, 2, 26), amount: 79.9816798941799}]);
+			expect(result).toEqual([{date: new Date(2015, 11, 26), amount: 126.15384106634107}, {date: new Date(2016, 2, 19), amount: 76.90475681725681}]);
 		});
 	});
 });
