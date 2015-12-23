@@ -1,5 +1,5 @@
 angular.module('app.components')
-	.controller('HomeController', ['$scope', 'DataStoreService', 'PtoService', function($scope, DataStoreService, PtoService) {
+	.controller('HomeController', function($scope, DataStoreService, PtoService) {
 	$scope.futurePto = undefined;
 	$scope.ptoAsOf = new Date();
 
@@ -64,4 +64,4 @@ angular.module('app.components')
 	};
 
 	$scope.initialize();
-}]);
+});

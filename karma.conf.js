@@ -28,8 +28,8 @@ module.exports = function(config) {
 		files: [
 			'target/web/js/vendor.min.js',
 			"node_modules/angular-mocks/angular-mocks.js",
+			'target/build/app.templates.js',
 			'src/main/webapp/scripts/**/*.js',
-			'src/test/webapp/mock.templates.js',
 			'src/test/webapp/services/**/*.spec.js',
 			'src/test/webapp/components/**/*.spec.js'
 		],

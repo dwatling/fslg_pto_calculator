@@ -1,4 +1,4 @@
-maven-downloads/
+.cache/
 node_modules/
 target/
 .idea/

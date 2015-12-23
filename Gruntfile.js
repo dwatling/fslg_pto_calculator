@@ -23,7 +23,7 @@ module.exports = function (grunt) {
 		watch: {
 			index: {
 				files: ["<%= global.sourceFolder %>/index.html"],
-				tasks: ['copy:build', 'copy:deploy'],
+				tasks: ['copy:build'],
 				options: {
 					spawn: false,
 					interrupt: true
@@ -31,7 +31,7 @@ module.exports = function (grunt) {
 			},
 			app: {
 				files: ["<%= global.sourceFolder %>/scripts/**/*.js"],
-				tasks: ['jshint', 'concat:app', 'copy:deploy'],
+				tasks: ['jshint', 'ngAnnotate', 'concat:app'],
 				options: {
 					spawn: false,
 					interrupt: true
@@ -39,7 +39,7 @@ module.exports = function (grunt) {
 			},
 			templates: {
 				files: ["<%= global.sourceFolder %>/**/*.tpl.html"],
-				tasks: ['ngtemplates', 'concat:app', 'copy:deploy'],
+				tasks: ['ngtemplates', 'ngAnnotate', 'concat:app'],
 				options: {
 					spawn: false,
 					interrupt: true
@@ -47,7 +47,7 @@ module.exports = function (grunt) {
 			},
 			styles: {
 				files: ["<%= global.sourceFolder %>/**/*.scss"],
-				tasks: ['sass', 'copy:deploy'],
+				tasks: ['sass'],
 				options: {
 					spawn: false,
 					interrupt: true
@@ -77,10 +77,21 @@ module.exports = function (grunt) {
 				}
 			}
 		},
+		ngAnnotate: {
+			app: {
+				files:  [{
+					expand: true,
+					src: [
+						"<%= global.sourceFolder %>/scripts/**/*.js"
+					],
+					dest: "<%= global.tempBuildFolder %>/js"
+				}]
+			}
+		},
 		uglify: {
 			app: {
 				files: {
-					"<%= global.outputFolder %>/js/app.min.js": ["<%= global.tempBuildFolder %>/app.templates.js", "<%= global.sourceFolder %>/scripts/**/*.js"]
+					"<%= global.outputFolder %>/js/app.min.js": ["<%= global.tempBuildFolder %>/app.templates.js", "<%= global.tempBuildFolder %>/js/**/*.js"]
 				}
 			},
 			vendor: {
@@ -103,10 +114,7 @@ module.exports = function (grunt) {
 					sourceMap: true
 				},
 				files: {
-					"<%= global.outputFolder %>/js/app.min.js": [
-						"<%= global.tempBuildFolder %>/app.templates.js",
-						"<%= global.sourceFolder %>/scripts/**/*.js"
-					]
+					"<%= global.outputFolder %>/js/app.min.js": ["<%= global.tempBuildFolder %>/app.templates.js", "<%= global.tempBuildFolder %>/js/**/*.js"]
 				}
 			},
 			vendor: {
@@ -131,13 +139,6 @@ module.exports = function (grunt) {
 				files: [
 					{expand: true, flatten: true, cwd: "<%= global.sourceFolder %>", src: ['index.html', 'favicon.ico'], dest: '<%= global.outputFolder%>'}
 				]
-			},
-			deploy: {
-				files: [
-					{expand: true, flatten: true, cwd: "<%= global.outputFolder %>/js/", src: ['vendor.min.*', 'app.min.*'], dest: '<%= global.httpServerFolder %>/js/'},
-					{expand: true, flatten: true, cwd: "<%= global.outputFolder %>/css/", src: ['vendor.min.*', 'app.min.*'], dest: '<%= global.httpServerFolder %>/css/'},
-					{expand: true, flatten: true, cwd: "<%= global.sourceFolder %>", src: ['index.html', 'favicon.ico'], dest: '<%= global.httpServerFolder %>/'}
-				]
 			}
 		},
 		jshint: {
@@ -156,7 +157,7 @@ module.exports = function (grunt) {
     });  
 
     // Default task.  
-    grunt.registerTask('build', ['sass:dist', 'jshint', 'ngtemplates', 'uglify', 'copy:build']);
+    grunt.registerTask('build', ['sass:dist', 'jshint', 'ngtemplates', 'ngAnnotate', 'uglify', 'copy:build']);
     grunt.registerTask('test', ['karma']);
 	grunt.registerTask('default', ['build', 'test']);
 };

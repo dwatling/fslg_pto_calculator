@@ -1,3 +1,3 @@
 $(window).load(function() {
-	angular.bootstrap(document, ['app'], {strictDi: true});
+	angular.bootstrap(document, ['app'], {strictDi: window.jasmine === undefined});
 });
