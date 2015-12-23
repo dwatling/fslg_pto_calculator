@@ -12,7 +12,6 @@ angular.module('app.services')
 			];
 
 		this.getPtoAccrualMatrix = function() {
-			// TODO - These values currently include floating holidays, but I'm pretty sure those expire on a different date than the PTO cap
 			return [
 				{yearsEmployed: 0, ptoPerYear: 15, label: "< 1 year"},
 				{yearsEmployed: 1, ptoPerYear: 19, label: "1 - 5 years"},
