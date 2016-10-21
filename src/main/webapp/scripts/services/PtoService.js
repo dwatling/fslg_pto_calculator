@@ -6,9 +6,9 @@ angular.module('app.services')
 	var PTO_CAP_DATES = [
 			{date: new Date(2015, 11, 26), cap: 80},
 			{date: new Date(2016, 2, 19), cap: 40},
-			{date: new Date(2016, 11, 24), cap: 40},
-			{date: new Date(2017, 11, 23), cap: 40},		// TODO: verify
-			{date: new Date(2018, 11, 22), cap: 40},		// TODO: verify
+			{date: new Date(2016, 11, 31), cap: 40},
+			{date: new Date(2017, 11, 31), cap: 40},		// TODO: verify
+			{date: new Date(2018, 11, 31), cap: 40},		// TODO: verify
 		];
 
 	this.getPtoAccrualMatrix = function() {
