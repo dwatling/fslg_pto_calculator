@@ -1,10 +1,9 @@
 module.exports = function(config) {
 	config.set({
 		basePath: '.',
-		frameworks: ['jasmine', 'sinon'],
+		frameworks: ['jasmine'],
 		plugins: [
 			'karma-jasmine',
-			'karma-sinon',
 			'karma-phantomjs-launcher',
 			'karma-junit-reporter',
 			'karma-coverage'
