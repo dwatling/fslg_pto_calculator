@@ -103,5 +103,11 @@ describe("PtoService", function() {
 			var result = service.calculateUseOrLose(tonsOfPtoBoy);
 			expect(result).toEqual([{date: new Date(2015, 11, 26), amount: 126.15384106634107}, {date: new Date(2016, 2, 19), amount: 76.90475681725681}]);
 		});
+
+		it("should reflect December 31st cut off date for 2016", function() {
+			var ptoHorder = new Employee({yearsEmployed: 10, ptoPerYear: 20, lastPto: 185, lastPtoUpdate: new Date(2016, 11, 6)});
+			var result = service.calculateUseOrLose(ptoHorder);
+			expect(result).toEqual([{date: new Date(2016, 11, 31), amount: 155.9890059015059}]);
+		});
 	});
 });
